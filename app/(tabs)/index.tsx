@@ -88,7 +88,11 @@ export default function HomeScreen() {
           <Text style={styles.heroSubtitle}>
             Track your impact and see how your contributions are changing lives around the world
           </Text>
-          <TouchableOpacity style={styles.heroButton} onPress={handleNewCampaign}>
+          <TouchableOpacity 
+            style={styles.heroButton} 
+            onPress={handleNewCampaign}
+            activeOpacity={0.8}
+          >
             <Text style={styles.heroButtonText}>Start New Campaign</Text>
           </TouchableOpacity>
         </LinearGradient>
