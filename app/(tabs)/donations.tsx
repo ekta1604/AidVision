@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Search, Filter, Plus, MapPin, Calendar, DollarSign } from 'lucide-react-native';
+import { Search, Filter, Plus, MapPin, Calendar, DollarSign, Users } from 'lucide-react-native';
 
 export default function DonationsScreen() {
   const [searchQuery, setSearchQuery] = useState('');
