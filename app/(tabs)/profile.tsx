@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Settings, Bell, Shield, CircleHelp as HelpCircle, LogOut, CreditCard as Edit3, Award, Heart, ChevronRight, Star } from 'lucide-react-native';
@@ -18,6 +18,33 @@ export default function ProfileScreen() {
     { title: 'Help & Support', icon: HelpCircle, color: '#f59e0b' },
   ];
 
+  const handleEditImage = () => {
+    Alert.alert(
+      'Change Profile Photo',
+      'Select a new profile photo',
+      [
+        { text: 'Camera' },
+        { text: 'Photo Library' },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleMenuItem = (title: string) => {
+    Alert.alert(title, `Opening ${title} settings...`, [{ text: 'OK' }]);
+  };
+
+  const handleSignOut = () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Sign Out', style: 'destructive', onPress: () => console.log('Signing out...') }
+      ]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -33,7 +60,7 @@ export default function ProfileScreen() {
               source={{ uri: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=200&h=200&fit=crop' }}
               style={styles.profileImage}
             />
-            <TouchableOpacity style={styles.editImageButton}>
+            <TouchableOpacity style={styles.editImageButton} onPress={handleEditImage}>
               <Edit3 size={16} color="#3b82f6" />
             </TouchableOpacity>
           </View>
@@ -84,7 +111,7 @@ export default function ProfileScreen() {
         <View style={styles.menuContainer}>
           <Text style={styles.sectionTitle}>Settings</Text>
           {menuItems.map((item, index) => (
-            <TouchableOpacity key={index} style={styles.menuItem}>
+            <TouchableOpacity key={index} style={styles.menuItem} onPress={() => handleMenuItem(item.title)}>
               <View style={styles.menuItemLeft}>
                 <View style={[styles.menuIcon, { backgroundColor: `${item.color}15` }]}>
                   <item.icon size={20} color={item.color} />
@@ -98,7 +125,7 @@ export default function ProfileScreen() {
 
         {/* Logout */}
         <View style={styles.logoutContainer}>
-          <TouchableOpacity style={styles.logoutButton}>
+          <TouchableOpacity style={styles.logoutButton} onPress={handleSignOut}>
             <LogOut size={20} color="#ef4444" />
             <Text style={styles.logoutText}>Sign Out</Text>
           </TouchableOpacity>

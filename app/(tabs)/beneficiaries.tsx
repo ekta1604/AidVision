@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Plus, MapPin, Calendar, Users } from 'lucide-react-native';
 
@@ -74,12 +74,39 @@ export default function BeneficiariesScreen() {
     }
   };
 
+  const handleAddBeneficiary = () => {
+    Alert.alert(
+      'Add Beneficiary',
+      'Register a new person or family to receive aid.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Add', onPress: () => console.log('Adding new beneficiary...') }
+      ]
+    );
+  };
+
+  const handleFilter = () => {
+    Alert.alert(
+      'Filter People',
+      'Filter by status, needs, location, or family size.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleBeneficiaryCard = (beneficiary: any) => {
+    Alert.alert(
+      beneficiary.name,
+      `Location: ${beneficiary.location}\nAge: ${beneficiary.age}\nFamily: ${beneficiary.family} members\nNeeds: ${beneficiary.needs.join(', ')}\nStatus: ${beneficiary.status}`,
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Beneficiaries</Text>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddBeneficiary}>
           <Plus size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -96,7 +123,7 @@ export default function BeneficiariesScreen() {
             placeholderTextColor="#9ca3af"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity style={styles.filterButton} onPress={handleFilter}>
           <Filter size={20} color="#374151" />
         </TouchableOpacity>
       </View>
@@ -120,7 +147,7 @@ export default function BeneficiariesScreen() {
       {/* Beneficiaries List */}
       <ScrollView style={styles.beneficiariesList} showsVerticalScrollIndicator={false}>
         {beneficiaries.map((beneficiary) => (
-          <TouchableOpacity key={beneficiary.id} style={styles.beneficiaryCard}>
+          <TouchableOpacity key={beneficiary.id} style={styles.beneficiaryCard} onPress={() => handleBeneficiaryCard(beneficiary)}>
             <View style={styles.beneficiaryHeader}>
               <Image source={{ uri: beneficiary.image }} style={styles.profileImage} />
               <View style={styles.beneficiaryInfo}>

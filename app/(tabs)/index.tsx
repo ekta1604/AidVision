@@ -1,6 +1,7 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, TrendingUp, Users, Package, MapPin, Bell } from 'lucide-react-native';
 
@@ -20,6 +21,47 @@ export default function HomeScreen() {
     { title: 'Medical Supplies', location: 'Bangladesh', amount: '$7,500', time: '1 day ago' },
   ];
 
+  const handleNewCampaign = () => {
+    Alert.alert(
+      'New Campaign',
+      'Start a new aid campaign to help people in need.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Continue', onPress: () => console.log('Starting new campaign...') }
+      ]
+    );
+  };
+
+  const handleNotifications = () => {
+    Alert.alert('Notifications', 'You have 3 new updates about your donations.');
+  };
+
+  const handleStatCard = (statLabel: string) => {
+    if (statLabel === 'Total Donations') {
+      router.push('/donations');
+    } else if (statLabel === 'People Helped') {
+      router.push('/beneficiaries');
+    } else if (statLabel === 'Active Projects' || statLabel === 'Locations') {
+      router.push('/analytics');
+    }
+  };
+
+  const handleActivityCard = (activity: any) => {
+    Alert.alert(
+      activity.title,
+      `Location: ${activity.location}\nAmount: ${activity.amount}\nTime: ${activity.time}`,
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleQuickAction = (action: string) => {
+    if (action === 'New Donation') {
+      router.push('/donations');
+    } else if (action === 'Add Beneficiary') {
+      router.push('/beneficiaries');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -29,7 +71,7 @@ export default function HomeScreen() {
             <Text style={styles.greeting}>Good morning</Text>
             <Text style={styles.userName}>Sarah Chen</Text>
           </View>
-          <TouchableOpacity style={styles.notificationButton}>
+          <TouchableOpacity style={styles.notificationButton} onPress={handleNotifications}>
             <Bell size={24} color="#374151" />
             <View style={styles.notificationBadge} />
           </TouchableOpacity>
@@ -46,7 +88,7 @@ export default function HomeScreen() {
           <Text style={styles.heroSubtitle}>
             Track your impact and see how your contributions are changing lives around the world
           </Text>
-          <TouchableOpacity style={styles.heroButton}>
+          <TouchableOpacity style={styles.heroButton} onPress={handleNewCampaign}>
             <Text style={styles.heroButtonText}>Start New Campaign</Text>
           </TouchableOpacity>
         </LinearGradient>
@@ -56,7 +98,7 @@ export default function HomeScreen() {
           <Text style={styles.sectionTitle}>Impact Overview</Text>
           <View style={styles.statsGrid}>
             {stats.map((stat, index) => (
-              <TouchableOpacity key={index} style={styles.statCard}>
+              <TouchableOpacity key={index} style={styles.statCard} onPress={() => handleStatCard(stat.label)}>
                 <View style={[styles.statIcon, { backgroundColor: `${stat.color}15` }]}>
                   <stat.icon size={24} color={stat.color} />
                 </View>
@@ -71,13 +113,13 @@ export default function HomeScreen() {
         <View style={styles.activityContainer}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Recent Activity</Text>
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/donations')}>
               <Text style={styles.seeAllText}>See All</Text>
             </TouchableOpacity>
           </View>
           
           {recentActivity.map((activity, index) => (
-            <TouchableOpacity key={index} style={styles.activityCard}>
+            <TouchableOpacity key={index} style={styles.activityCard} onPress={() => handleActivityCard(activity)}>
               <View style={styles.activityIcon}>
                 <TrendingUp size={20} color="#10b981" />
               </View>
@@ -97,11 +139,11 @@ export default function HomeScreen() {
         <View style={styles.quickActionsContainer}>
           <Text style={styles.sectionTitle}>Quick Actions</Text>
           <View style={styles.quickActionsGrid}>
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => handleQuickAction('New Donation')}>
               <Package size={28} color="#3b82f6" />
               <Text style={styles.quickActionText}>New Donation</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.quickActionCard}>
+            <TouchableOpacity style={styles.quickActionCard} onPress={() => handleQuickAction('Add Beneficiary')}>
               <Users size={28} color="#10b981" />
               <Text style={styles.quickActionText}>Add Beneficiary</Text>
             </TouchableOpacity>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TrendingUp, TrendingDown, DollarSign, Users, Package, MapPin, Calendar, Target } from 'lucide-react-native';
@@ -32,6 +32,35 @@ export default function AnalyticsScreen() {
 
   const maxDonation = Math.max(...monthlyData.map(d => d.donations));
 
+  const handlePeriodChange = () => {
+    Alert.alert(
+      'Change Period',
+      'Select time period for analytics',
+      [
+        { text: 'This Month' },
+        { text: 'This Quarter' },
+        { text: 'This Year' },
+        { text: 'Cancel', style: 'cancel' }
+      ]
+    );
+  };
+
+  const handleMetricCard = (metric: any) => {
+    Alert.alert(
+      metric.label,
+      `Current value: ${metric.value}\nChange: ${metric.change} from last period`,
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleGoalCard = () => {
+    Alert.alert(
+      'Annual Goal Progress',
+      'You are 68% towards your goal of impacting 15,000 lives this year. Keep up the great work!',
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -41,7 +70,7 @@ export default function AnalyticsScreen() {
             <Text style={styles.headerTitle}>Impact Analytics</Text>
             <Text style={styles.headerSubtitle}>Track your global impact</Text>
           </View>
-          <TouchableOpacity style={styles.periodButton}>
+          <TouchableOpacity style={styles.periodButton} onPress={handlePeriodChange}>
             <Calendar size={20} color="#3b82f6" />
             <Text style={styles.periodText}>This Year</Text>
           </TouchableOpacity>
@@ -50,7 +79,7 @@ export default function AnalyticsScreen() {
         {/* Impact Metrics */}
         <View style={styles.metricsContainer}>
           {impactMetrics.map((metric, index) => (
-            <View key={index} style={styles.metricCard}>
+            <TouchableOpacity key={index} style={styles.metricCard} onPress={() => handleMetricCard(metric)}>
               <View style={styles.metricHeader}>
                 <View style={[styles.metricIcon, { backgroundColor: `${metric.trend === 'up' ? '#10b981' : '#ef4444'}15` }]}>
                   <metric.icon size={20} color={metric.trend === 'up' ? '#10b981' : '#ef4444'} />
@@ -68,7 +97,7 @@ export default function AnalyticsScreen() {
               </View>
               <Text style={styles.metricValue}>{metric.value}</Text>
               <Text style={styles.metricLabel}>{metric.label}</Text>
-            </View>
+            </TouchableOpacity>
           ))}
         </View>
 
@@ -129,7 +158,8 @@ export default function AnalyticsScreen() {
         {/* Goals Section */}
         <View style={styles.goalsContainer}>
           <Text style={styles.sectionTitle}>2024 Goals</Text>
-          <LinearGradient
+          <TouchableOpacity onPress={handleGoalCard}>
+            <LinearGradient
             colors={['#10b981', '#059669']}
             style={styles.goalCard}
             start={{ x: 0, y: 0 }}
@@ -147,6 +177,7 @@ export default function AnalyticsScreen() {
               <Text style={styles.goalProgressText}>68% Complete</Text>
             </View>
           </LinearGradient>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </SafeAreaView>

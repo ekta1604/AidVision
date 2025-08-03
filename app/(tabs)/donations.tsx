@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Plus, MapPin, Calendar, DollarSign } from 'lucide-react-native';
 
@@ -72,12 +72,39 @@ export default function DonationsScreen() {
     }
   };
 
+  const handleAddDonation = () => {
+    Alert.alert(
+      'New Donation',
+      'Create a new donation campaign to help people in need.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Create', onPress: () => console.log('Creating new donation...') }
+      ]
+    );
+  };
+
+  const handleFilter = () => {
+    Alert.alert(
+      'Filter Donations',
+      'Filter by status, category, location, or date range.',
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleDonationCard = (donation: any) => {
+    Alert.alert(
+      donation.title,
+      `Organization: ${donation.organization}\nLocation: ${donation.location}\nAmount: $${donation.amount.toLocaleString()}\nStatus: ${donation.status}\nBeneficiaries: ${donation.beneficiaries} people`,
+      [{ text: 'OK' }]
+    );
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Donations</Text>
-        <TouchableOpacity style={styles.addButton}>
+        <TouchableOpacity style={styles.addButton} onPress={handleAddDonation}>
           <Plus size={24} color="#ffffff" />
         </TouchableOpacity>
       </View>
@@ -94,7 +121,7 @@ export default function DonationsScreen() {
             placeholderTextColor="#9ca3af"
           />
         </View>
-        <TouchableOpacity style={styles.filterButton}>
+        <TouchableOpacity style={styles.filterButton} onPress={handleFilter}>
           <Filter size={20} color="#374151" />
         </TouchableOpacity>
       </View>
@@ -114,7 +141,7 @@ export default function DonationsScreen() {
       {/* Donations List */}
       <ScrollView style={styles.donationsList} showsVerticalScrollIndicator={false}>
         {donations.map((donation) => (
-          <TouchableOpacity key={donation.id} style={styles.donationCard}>
+          <TouchableOpacity key={donation.id} style={styles.donationCard} onPress={() => handleDonationCard(donation)}>
             <View style={styles.donationHeader}>
               <View style={styles.donationTitleContainer}>
                 <Text style={styles.donationTitle}>{donation.title}</Text>
