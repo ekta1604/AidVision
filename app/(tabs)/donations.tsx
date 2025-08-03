@@ -1,57 +1,50 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Plus, MapPin, Calendar, DollarSign, Users } from 'lucide-react-native';
+import Modal from '@/components/Modal';
+import FormModal from '@/components/FormModal';
+import { useData } from '@/contexts/DataContext';
 
 export default function DonationsScreen() {
+  const { donations, addDonation } = useData();
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
+  const showModal = (title: string, message: string, buttons?: Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>) => {
+    setModalConfig({ title, message, buttons: buttons || [] });
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
   
-  const donations = [
-    {
-      id: 1,
-      title: 'Emergency Food Relief',
-      organization: 'World Food Programme',
-      location: 'Haiti',
-      amount: 5200,
-      date: '2024-01-15',
-      status: 'Delivered',
-      beneficiaries: 340,
-      category: 'Food',
-    },
-    {
-      id: 2,
-      title: 'Clean Water Infrastructure',
-      organization: 'Water.org',
-      location: 'Kenya',
-      amount: 12500,
-      date: '2024-01-12',
-      status: 'In Progress',
-      beneficiaries: 850,
-      category: 'Water',
-    },
-    {
-      id: 3,
-      title: 'Medical Supply Distribution',
-      organization: 'Doctors Without Borders',
-      location: 'Bangladesh',
-      amount: 8300,
-      date: '2024-01-10',
-      status: 'Delivered',
-      beneficiaries: 520,
-      category: 'Healthcare',
-    },
-    {
-      id: 4,
-      title: 'Education Materials',
-      organization: 'UNICEF',
-      location: 'Nigeria',
-      amount: 4700,
-      date: '2024-01-08',
-      status: 'Pending',
-      beneficiaries: 280,
-      category: 'Education',
-    },
+  const donationFields = [
+    { key: 'title', label: 'Donation Title', type: 'text' as const, placeholder: 'Enter donation title', required: true },
+    { key: 'organization', label: 'Organization', type: 'text' as const, placeholder: 'Enter organization name', required: true },
+    { key: 'location', label: 'Location', type: 'text' as const, placeholder: 'Enter location', required: true },
+    { key: 'amount', label: 'Amount ($)', type: 'number' as const, placeholder: 'Enter amount', required: true },
+    { key: 'date', label: 'Date', type: 'date' as const, placeholder: 'Select date', required: true },
+    { key: 'category', label: 'Category', type: 'select' as const, placeholder: 'Select category', required: true, options: ['Food', 'Water', 'Healthcare', 'Education', 'Housing', 'Emergency', 'Other'] },
+    { key: 'beneficiaries', label: 'Beneficiaries', type: 'number' as const, placeholder: 'Number of people helped', required: true },
+    { key: 'status', label: 'Status', type: 'select' as const, placeholder: 'Select status', required: true, options: ['delivered', 'in_progress', 'pending'] },
   ];
+
+  const handleDonationSubmit = (data: any) => {
+    addDonation({
+      ...data,
+      amount: parseFloat(data.amount),
+      beneficiaries: parseInt(data.beneficiaries)
+    });
+    showModal('Success', 'Donation added successfully!');
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -73,29 +66,17 @@ export default function DonationsScreen() {
   };
 
   const handleAddDonation = () => {
-    Alert.alert(
-      'New Donation',
-      'Create a new donation campaign to help people in need.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Create', onPress: () => console.log('Creating new donation...') }
-      ]
-    );
+    setFormModalVisible(true);
   };
 
   const handleFilter = () => {
-    Alert.alert(
-      'Filter Donations',
-      'Filter by status, category, location, or date range.',
-      [{ text: 'OK' }]
-    );
+    showModal('Filter Donations', 'Filter by status, category, location, or date range.');
   };
 
   const handleDonationCard = (donation: any) => {
-    Alert.alert(
+    showModal(
       donation.title,
-      `Organization: ${donation.organization}\nLocation: ${donation.location}\nAmount: $${donation.amount.toLocaleString()}\nStatus: ${donation.status}\nBeneficiaries: ${donation.beneficiaries} people`,
-      [{ text: 'OK' }]
+      `Organization: ${donation.organization}\nLocation: ${donation.location}\nAmount: $${donation.amount.toLocaleString()}\nStatus: ${donation.status}\nBeneficiaries: ${donation.beneficiaries} people`
     );
   };
 
@@ -183,6 +164,22 @@ export default function DonationsScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      
+      <Modal
+        visible={modalVisible}
+        onClose={hideModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
+      
+      <FormModal
+        visible={formModalVisible}
+        onClose={() => setFormModalVisible(false)}
+        title="Add New Donation"
+        fields={donationFields}
+        onSubmit={handleDonationSubmit}
+      />
     </SafeAreaView>
   );
 }

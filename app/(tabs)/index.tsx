@@ -1,39 +1,77 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Heart, TrendingUp, Users, Package, MapPin, Bell } from 'lucide-react-native';
+import Modal from '@/components/Modal';
+import FormModal from '@/components/FormModal';
+import { useData } from '@/contexts/DataContext';
 
 const { width } = Dimensions.get('window');
 
 export default function HomeScreen() {
+  const { getStats, addCampaign, donations } = useData();
+  const [modalVisible, setModalVisible] = useState(false);
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
+  const showModal = (title: string, message: string, buttons?: Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>) => {
+    setModalConfig({ title, message, buttons: buttons || [] });
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
+
+  const appStats = getStats();
   const stats = [
-    { label: 'Total Donations', value: '$127,450', icon: Heart, color: '#ef4444' },
-    { label: 'People Helped', value: '2,847', icon: Users, color: '#10b981' },
-    { label: 'Active Projects', value: '23', icon: Package, color: '#3b82f6' },
-    { label: 'Locations', value: '12', icon: MapPin, color: '#f59e0b' },
+    { label: 'Total Donations', value: `$${appStats.totalDonations.toLocaleString()}`, icon: Heart, color: '#ef4444' },
+    { label: 'People Helped', value: appStats.totalBeneficiaries.toLocaleString(), icon: Users, color: '#10b981' },
+    { label: 'Active Projects', value: appStats.activeCampaigns.toString(), icon: Package, color: '#3b82f6' },
+    { label: 'Locations', value: appStats.totalLocations.toString(), icon: MapPin, color: '#f59e0b' },
   ];
 
-  const recentActivity = [
-    { title: 'Emergency Food Relief', location: 'Haiti', amount: '$5,200', time: '2 hours ago' },
-    { title: 'Clean Water Project', location: 'Kenya', amount: '$3,800', time: '5 hours ago' },
-    { title: 'Medical Supplies', location: 'Bangladesh', amount: '$7,500', time: '1 day ago' },
-  ];
+  const recentActivity = donations.slice(0, 3).map(donation => ({
+    title: donation.title,
+    location: donation.location,
+    amount: `$${donation.amount.toLocaleString()}`,
+    time: new Date(donation.createdAt).toLocaleDateString()
+  }));
 
   const handleNewCampaign = () => {
-    Alert.alert(
-      'New Campaign',
-      'Start a new aid campaign to help people in need.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Continue', onPress: () => console.log('Starting new campaign...') }
-      ]
-    );
+    setFormModalVisible(true);
+  };
+
+  const campaignFields = [
+    { key: 'title', label: 'Campaign Title', type: 'text' as const, placeholder: 'Enter campaign title', required: true },
+    { key: 'description', label: 'Description', type: 'textarea' as const, placeholder: 'Describe the campaign purpose and goals', required: true },
+    { key: 'category', label: 'Category', type: 'select' as const, placeholder: 'Select category', required: true, options: ['Food', 'Water', 'Healthcare', 'Education', 'Housing', 'Emergency', 'Other'] },
+    { key: 'location', label: 'Location', type: 'text' as const, placeholder: 'Enter location', required: true },
+    { key: 'targetAmount', label: 'Target Amount ($)', type: 'number' as const, placeholder: 'Enter target amount', required: true },
+    { key: 'startDate', label: 'Start Date', type: 'date' as const, placeholder: 'Select start date', required: true },
+    { key: 'endDate', label: 'End Date', type: 'date' as const, placeholder: 'Select end date', required: true },
+    { key: 'beneficiaries', label: 'Expected Beneficiaries', type: 'number' as const, placeholder: 'Number of people to help', required: true },
+  ];
+
+  const handleCampaignSubmit = (data: any) => {
+    addCampaign({
+      ...data,
+      targetAmount: parseFloat(data.targetAmount),
+      beneficiaries: parseInt(data.beneficiaries),
+      currentAmount: 0,
+      status: 'active' as const
+    });
+    showModal('Success', 'Campaign created successfully!');
   };
 
   const handleNotifications = () => {
-    Alert.alert('Notifications', 'You have 3 new updates about your donations.');
+    showModal('Notifications', 'You have 3 new updates about your donations.');
   };
 
   const handleStatCard = (statLabel: string) => {
@@ -47,10 +85,9 @@ export default function HomeScreen() {
   };
 
   const handleActivityCard = (activity: any) => {
-    Alert.alert(
+    showModal(
       activity.title,
-      `Location: ${activity.location}\nAmount: ${activity.amount}\nTime: ${activity.time}`,
-      [{ text: 'OK' }]
+      `Location: ${activity.location}\nAmount: ${activity.amount}\nTime: ${activity.time}`
     );
   };
 
@@ -154,6 +191,22 @@ export default function HomeScreen() {
           </View>
         </View>
       </ScrollView>
+      
+      <Modal
+        visible={modalVisible}
+        onClose={hideModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
+      
+      <FormModal
+        visible={formModalVisible}
+        onClose={() => setFormModalVisible(false)}
+        title="Create New Campaign"
+        fields={campaignFields}
+        onSubmit={handleCampaignSubmit}
+      />
     </SafeAreaView>
   );
 }

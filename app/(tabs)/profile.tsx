@@ -1,10 +1,27 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Settings, Bell, Shield, CircleHelp as HelpCircle, LogOut, CreditCard as Edit3, Award, Heart, ChevronRight, Star } from 'lucide-react-native';
+import Modal from '@/components/Modal';
 
 export default function ProfileScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
+  const showModal = (title: string, message: string, buttons?: Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>) => {
+    setModalConfig({ title, message, buttons: buttons || [] });
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
+
   const achievements = [
     { title: 'First Donation', icon: Heart, color: '#ef4444' },
     { title: 'Impact Champion', icon: Award, color: '#f59e0b' },
@@ -19,28 +36,28 @@ export default function ProfileScreen() {
   ];
 
   const handleEditImage = () => {
-    Alert.alert(
+    showModal(
       'Change Profile Photo',
       'Select a new profile photo',
       [
-        { text: 'Camera' },
-        { text: 'Photo Library' },
-        { text: 'Cancel', style: 'cancel' }
+        { text: 'Camera', onPress: hideModal },
+        { text: 'Photo Library', onPress: hideModal },
+        { text: 'Cancel', onPress: hideModal, style: 'cancel' }
       ]
     );
   };
 
   const handleMenuItem = (title: string) => {
-    Alert.alert(title, `Opening ${title} settings...`, [{ text: 'OK' }]);
+    showModal(title, `Opening ${title} settings...`);
   };
 
   const handleSignOut = () => {
-    Alert.alert(
+    showModal(
       'Sign Out',
       'Are you sure you want to sign out?',
       [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Sign Out', style: 'destructive', onPress: () => console.log('Signing out...') }
+        { text: 'Cancel', onPress: hideModal, style: 'cancel' },
+        { text: 'Sign Out', onPress: () => { console.log('Signing out...'); hideModal(); }, style: 'destructive' }
       ]
     );
   };
@@ -133,6 +150,14 @@ export default function ProfileScreen() {
 
         <View style={styles.bottomSpacer} />
       </ScrollView>
+      
+      <Modal
+        visible={modalVisible}
+        onClose={hideModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
     </SafeAreaView>
   );
 }

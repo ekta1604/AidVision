@@ -1,57 +1,51 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Search, Filter, Plus, MapPin, Calendar, Users } from 'lucide-react-native';
+import Modal from '@/components/Modal';
+import FormModal from '@/components/FormModal';
+import { useData } from '@/contexts/DataContext';
 
 export default function BeneficiariesScreen() {
+  const { beneficiaries, addBeneficiary } = useData();
   const [searchQuery, setSearchQuery] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [formModalVisible, setFormModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
+  const showModal = (title: string, message: string, buttons?: Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>) => {
+    setModalConfig({ title, message, buttons: buttons || [] });
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
   
-  const beneficiaries = [
-    {
-      id: 1,
-      name: 'Maria Santos',
-      location: 'Port-au-Prince, Haiti',
-      age: 34,
-      family: 4,
-      needs: ['Food', 'Medical'],
-      lastAid: '2024-01-15',
-      status: 'Active',
-      image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    },
-    {
-      id: 2,
-      name: 'Ahmed Hassan',
-      location: 'Nairobi, Kenya',
-      age: 28,
-      family: 6,
-      needs: ['Water', 'Education'],
-      lastAid: '2024-01-12',
-      status: 'Active',
-      image: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    },
-    {
-      id: 3,
-      name: 'Fatima Rahman',
-      location: 'Dhaka, Bangladesh',
-      age: 42,
-      family: 3,
-      needs: ['Healthcare', 'Housing'],
-      lastAid: '2024-01-10',
-      status: 'Completed',
-      image: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    },
-    {
-      id: 4,
-      name: 'John Okafor',
-      location: 'Lagos, Nigeria',
-      age: 31,
-      family: 5,
-      needs: ['Education', 'Food'],
-      lastAid: '2024-01-08',
-      status: 'Pending',
-      image: 'https://images.pexels.com/photos/1043471/pexels-photo-1043471.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop',
-    },
+  const beneficiaryFields = [
+    { key: 'name', label: 'Full Name', type: 'text' as const, placeholder: 'Enter full name', required: true },
+    { key: 'location', label: 'Location', type: 'text' as const, placeholder: 'Enter location', required: true },
+    { key: 'age', label: 'Age', type: 'number' as const, placeholder: 'Enter age', required: true },
+    { key: 'family', label: 'Family Size', type: 'number' as const, placeholder: 'Number of family members', required: true },
+    { key: 'needs', label: 'Primary Need', type: 'select' as const, placeholder: 'Select primary need', required: true, options: ['Food', 'Water', 'Healthcare', 'Education', 'Housing', 'Medical', 'Other'] },
+    { key: 'status', label: 'Status', type: 'select' as const, placeholder: 'Select status', required: true, options: ['active', 'completed', 'pending'] },
+    { key: 'lastAid', label: 'Last Aid Date', type: 'date' as const, placeholder: 'Select last aid date', required: true },
   ];
+
+  const handleBeneficiarySubmit = (data: any) => {
+    addBeneficiary({
+      ...data,
+      age: parseInt(data.age),
+      family: parseInt(data.family),
+      needs: [data.needs],
+      image: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=150&h=150&fit=crop'
+    });
+    showModal('Success', 'Beneficiary added successfully!');
+  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -75,29 +69,17 @@ export default function BeneficiariesScreen() {
   };
 
   const handleAddBeneficiary = () => {
-    Alert.alert(
-      'Add Beneficiary',
-      'Register a new person or family to receive aid.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Add', onPress: () => console.log('Adding new beneficiary...') }
-      ]
-    );
+    setFormModalVisible(true);
   };
 
   const handleFilter = () => {
-    Alert.alert(
-      'Filter People',
-      'Filter by status, needs, location, or family size.',
-      [{ text: 'OK' }]
-    );
+    showModal('Filter People', 'Filter by status, needs, location, or family size.');
   };
 
   const handleBeneficiaryCard = (beneficiary: any) => {
-    Alert.alert(
+    showModal(
       beneficiary.name,
-      `Location: ${beneficiary.location}\nAge: ${beneficiary.age}\nFamily: ${beneficiary.family} members\nNeeds: ${beneficiary.needs.join(', ')}\nStatus: ${beneficiary.status}`,
-      [{ text: 'OK' }]
+      `Location: ${beneficiary.location}\nAge: ${beneficiary.age}\nFamily: ${beneficiary.family} members\nNeeds: ${beneficiary.needs.join(', ')}\nStatus: ${beneficiary.status}`
     );
   };
 
@@ -186,6 +168,22 @@ export default function BeneficiariesScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
+      
+      <Modal
+        visible={modalVisible}
+        onClose={hideModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
+      
+      <FormModal
+        visible={formModalVisible}
+        onClose={() => setFormModalVisible(false)}
+        title="Add New Beneficiary"
+        fields={beneficiaryFields}
+        onSubmit={handleBeneficiarySubmit}
+      />
     </SafeAreaView>
   );
 }

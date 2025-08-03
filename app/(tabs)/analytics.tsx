@@ -1,12 +1,29 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Alert } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { TrendingUp, TrendingDown, DollarSign, Users, Package, MapPin, Calendar, Target } from 'lucide-react-native';
+import Modal from '@/components/Modal';
 
 const { width } = Dimensions.get('window');
 
 export default function AnalyticsScreen() {
+  const [modalVisible, setModalVisible] = useState(false);
+  const [modalConfig, setModalConfig] = useState({
+    title: '',
+    message: '',
+    buttons: [] as Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>
+  });
+
+  const showModal = (title: string, message: string, buttons?: Array<{ text: string; onPress: () => void; style?: 'default' | 'cancel' | 'destructive' }>) => {
+    setModalConfig({ title, message, buttons: buttons || [] });
+    setModalVisible(true);
+  };
+
+  const hideModal = () => {
+    setModalVisible(false);
+  };
+
   const impactMetrics = [
     { label: 'Lives Impacted', value: '12,847', change: '+23%', trend: 'up', icon: Users },
     { label: 'Funds Distributed', value: '$847K', change: '+18%', trend: 'up', icon: DollarSign },
@@ -33,31 +50,29 @@ export default function AnalyticsScreen() {
   const maxDonation = Math.max(...monthlyData.map(d => d.donations));
 
   const handlePeriodChange = () => {
-    Alert.alert(
+    showModal(
       'Change Period',
       'Select time period for analytics',
       [
-        { text: 'This Month' },
-        { text: 'This Quarter' },
-        { text: 'This Year' },
-        { text: 'Cancel', style: 'cancel' }
+        { text: 'This Month', onPress: hideModal },
+        { text: 'This Quarter', onPress: hideModal },
+        { text: 'This Year', onPress: hideModal },
+        { text: 'Cancel', onPress: hideModal, style: 'cancel' }
       ]
     );
   };
 
   const handleMetricCard = (metric: any) => {
-    Alert.alert(
+    showModal(
       metric.label,
-      `Current value: ${metric.value}\nChange: ${metric.change} from last period`,
-      [{ text: 'OK' }]
+      `Current value: ${metric.value}\nChange: ${metric.change} from last period`
     );
   };
 
   const handleGoalCard = () => {
-    Alert.alert(
+    showModal(
       'Annual Goal Progress',
-      'You are 68% towards your goal of impacting 15,000 lives this year. Keep up the great work!',
-      [{ text: 'OK' }]
+      'You are 68% towards your goal of impacting 15,000 lives this year. Keep up the great work!'
     );
   };
 
@@ -180,6 +195,14 @@ export default function AnalyticsScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+      
+      <Modal
+        visible={modalVisible}
+        onClose={hideModal}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        buttons={modalConfig.buttons}
+      />
     </SafeAreaView>
   );
 }
